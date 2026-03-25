@@ -115,7 +115,10 @@ export async function chatWithAI(issueId: string, userMessage: string): Promise<
   while (retries <= maxRetries) {
     try {
       const genai = new GoogleGenerativeAI(currentKey);
-      const model = genai.getGenerativeModel({ model: getGeminiModel() });
+      const model = genai.getGenerativeModel({
+        model: getGeminiModel(),
+        systemInstruction: systemPrompt,
+      });
 
       // Build chat history for Gemini
       const geminiHistory: { role: 'user' | 'model'; parts: { text: string }[] }[] = [];
@@ -129,7 +132,6 @@ export async function chatWithAI(issueId: string, userMessage: string): Promise<
 
       const chat = model.startChat({
         history: geminiHistory.length > 0 ? geminiHistory : undefined,
-        systemInstruction: systemPrompt,
       });
 
       // Build message parts: text + images
