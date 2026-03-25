@@ -25,12 +25,19 @@ jobs:
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           tags: tag:github-actions
 
+      - name: Test Tailscale Connection
+        run: |
+          echo "Waiting for Tailscale connection..."
+          for i in 1 2 3 4 5; do
+            ping -c 1 ${{ secrets.DEPLOY_SERVER_IP }} && break || sleep 5
+          done
+
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H ${{ secrets.DEPLOY_SERVER_IP }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secrets.DEPLOY_SERVER_IP }} >> ~/.ssh/known_hosts 2>/dev/null
 
       - name: Sync docker-compose.yml to server
         env:
