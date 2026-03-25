@@ -74,6 +74,16 @@ export function initDatabase() {
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
+    CREATE TABLE IF NOT EXISTS ai_chats (
+      id TEXT PRIMARY KEY,
+      issue_id TEXT NOT NULL REFERENCES issues(id) ON DELETE CASCADE,
+      role TEXT NOT NULL,
+      content TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_ai_chats_issue ON ai_chats(issue_id);
+
     CREATE INDEX IF NOT EXISTS idx_issues_status ON issues(status);
     CREATE INDEX IF NOT EXISTS idx_issues_author ON issues(author_id);
     CREATE INDEX IF NOT EXISTS idx_comments_issue ON comments(issue_id);

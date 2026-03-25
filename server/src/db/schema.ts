@@ -43,6 +43,14 @@ export const settings = sqliteTable('settings', {
   updatedAt: text('updated_at').notNull().default("(datetime('now'))"),
 });
 
+export const aiChats = sqliteTable('ai_chats', {
+  id: text('id').primaryKey(),
+  issueId: text('issue_id').notNull().references(() => issues.id, { onDelete: 'cascade' }),
+  role: text('role').notNull(), // 'user' | 'assistant' | 'system'
+  content: text('content').notNull(),
+  createdAt: text('created_at').notNull().default("(datetime('now'))"),
+});
+
 export const apiKeyUsage = sqliteTable('api_key_usage', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   apiKeySuffix: text('api_key_suffix').notNull(),
