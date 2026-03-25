@@ -61,18 +61,44 @@ export function invalidateKeyCache() {
   lastLoadTime = 0;
 }
 
-// Round-robin key selection
-export function getGeminiApiKey(): string | null {
+// Bad key tracking: key -> timestamp when it was marked bad
+const badKeys = new Map<string, number>();
+const BAD_KEY_TTL = 10 * 60_000; // 10 minutes before retrying a bad key
+
+export function markKeyBad(key: string) {
+  badKeys.set(key, Date.now());
+  console.warn(`[geminiKeys] Marked key ...${key.slice(-4)} as bad for ${BAD_KEY_TTL / 60000}m`);
+}
+
+function getHealthyKeys(): string[] {
+  const now = Date.now();
   const keys = loadKeys();
+  const healthy = keys.filter((k) => {
+    const badSince = badKeys.get(k);
+    if (!badSince) return true;
+    // Auto-recover after TTL
+    if (now - badSince > BAD_KEY_TTL) {
+      badKeys.delete(k);
+      return true;
+    }
+    return false;
+  });
+  // If all keys are bad, return all (better to try than to fail)
+  return healthy.length > 0 ? healthy : keys;
+}
+
+// Round-robin key selection (skips bad keys)
+export function getGeminiApiKey(): string | null {
+  const keys = getHealthyKeys();
   if (keys.length === 0) return null;
   const key = keys[keyIndex % keys.length];
   keyIndex = (keyIndex + 1) % keys.length;
   return key;
 }
 
-// Failover: random key excluding failed one
+// Failover: next healthy key excluding failed one
 export function getGeminiApiKeyExcluding(failedKey: string): string | null {
-  const keys = loadKeys().filter((k) => k !== failedKey);
+  const keys = getHealthyKeys().filter((k) => k !== failedKey);
   if (keys.length === 0) return null;
   return keys[Math.floor(Math.random() * keys.length)];
 }

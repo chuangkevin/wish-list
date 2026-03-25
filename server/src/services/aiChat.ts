@@ -3,7 +3,7 @@ import { db } from '../db/index.js';
 import { aiChats, issues, media, comments, users } from '../db/schema.js';
 import { eq, asc, sql } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
-import { getGeminiApiKey, getGeminiApiKeyExcluding, getGeminiModel, trackUsage } from './geminiKeys.js';
+import { getGeminiApiKey, getGeminiApiKeyExcluding, getGeminiModel, trackUsage, markKeyBad } from './geminiKeys.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -160,11 +160,20 @@ export async function chatWithAI(issueId: string, userMessage: string): Promise<
     } catch (err: any) {
       const msg = err?.message || '';
       const isRateLimit = msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED') || msg.includes('Too Many Requests');
+      const isInvalidKey = msg.includes('API_KEY_INVALID') || msg.includes('401') || msg.includes('403');
 
-      if (isRateLimit && retries < maxRetries) {
+      // Mark bad keys so they get skipped in future rotations
+      if (isInvalidKey) {
+        markKeyBad(currentKey);
+      }
+      if (isRateLimit) {
+        markKeyBad(currentKey);
+      }
+
+      if ((isRateLimit || isInvalidKey) && retries < maxRetries) {
         const altKey = getGeminiApiKeyExcluding(currentKey);
         if (altKey) {
-          console.warn(`[ai-chat] 429 on key ...${currentKey.slice(-4)}, retrying with ...${altKey.slice(-4)}`);
+          console.warn(`[ai-chat] Error on key ...${currentKey.slice(-4)}, retrying with ...${altKey.slice(-4)}`);
           currentKey = altKey;
           retries++;
           continue;
