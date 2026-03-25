@@ -8,6 +8,8 @@ import issuesRouter from './routes/issues.js';
 import commentsRouter from './routes/comments.js';
 import mediaRouter from './routes/media.js';
 import sseRouter from './routes/sse.js';
+import settingsRouter from './routes/settings.js';
+import aiChatRouter from './routes/aiChat.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -29,6 +31,8 @@ app.use('/api/issues', issuesRouter);
 app.use('/api/issues/:id/comments', commentsRouter);
 app.use('/api/issues/:id/media', mediaRouter);
 app.use('/api/issues/:id/events', sseRouter);
+app.use('/api/issues/:id/ai-chat', aiChatRouter);
+app.use('/api/settings', settingsRouter);
 
 // Serve client in production
 const clientDist = path.resolve(__dirname, '../../client/dist');
