@@ -888,7 +888,7 @@ select:focus {
 /* AI Chat Panel */
 .ai-chat-toggle {
   position: fixed;
-  bottom: 24px;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
   right: 24px;
   background: var(--color-primary);
   color: white;
@@ -908,7 +908,7 @@ select:focus {
 
 .ai-chat-panel {
   position: fixed;
-  bottom: 24px;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
   right: 24px;
   width: 380px;
   max-height: 520px;
@@ -1042,10 +1042,14 @@ select:focus {
 }
 
 @media (max-width: 480px) {
+  .ai-chat-toggle {
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  }
+
   .ai-chat-panel {
     width: calc(100vw - 32px);
     right: 16px;
-    bottom: 16px;
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px));
   }
 
   .usage-grid {
