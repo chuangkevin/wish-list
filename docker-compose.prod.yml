@@ -1,0 +1,30 @@
+services:
+  backend:
+    image: ${DOCKERHUB_USERNAME}/wish-list-backend:latest
+    ports:
+      - "3737:3737"
+    environment:
+      - NODE_ENV=production
+      - PORT=3737
+      - DATA_DIR=/data
+    volumes:
+      - sqlite_data:/data
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3737/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+
+  frontend:
+    image: ${DOCKERHUB_USERNAME}/wish-list-frontend:latest
+    ports:
+      - "1124:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  sqlite_data:
