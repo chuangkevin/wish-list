@@ -12,6 +12,7 @@ export default function Header() {
           <a href="/">女神的願望清單</a>
         </h1>
         <div className="header-right">
+          <a href="/settings" className="btn-icon" title="設定">⚙️</a>
           <button className="btn-theme" onClick={toggle} title={dark ? '切換淺色' : '切換深色'}>
             {dark ? '☀️' : '🌙'}
           </button>

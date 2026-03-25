@@ -89,4 +89,26 @@ export const api = {
 
   deleteMedia: (issueId: string, mediaId: string) =>
     request<any>(`/issues/${issueId}/media/${mediaId}`, { method: 'DELETE' }),
+
+  // Settings
+  getApiKeys: () => request<{ keys: any[]; model: string }>('/settings/api-keys'),
+  addApiKey: (apiKey: string) =>
+    request<any>('/settings/api-keys', { method: 'POST', body: JSON.stringify({ apiKey }) }),
+  batchImportKeys: (text: string) =>
+    request<any>('/settings/api-keys/batch', { method: 'POST', body: JSON.stringify({ text }) }),
+  deleteApiKey: (suffix: string) =>
+    request<any>(`/settings/api-keys/${suffix}`, { method: 'DELETE' }),
+  getTokenUsage: () => request<any>('/settings/token-usage'),
+  updateModel: (model: string) =>
+    request<any>('/settings/model', { method: 'PUT', body: JSON.stringify({ model }) }),
+
+  // AI Chat
+  getAiChat: (issueId: string) => request<any[]>(`/issues/${issueId}/ai-chat`),
+  sendAiChat: (issueId: string, message: string) =>
+    request<{ reply: string }>(`/issues/${issueId}/ai-chat`, {
+      method: 'POST',
+      body: JSON.stringify({ message }),
+    }),
+  clearAiChat: (issueId: string) =>
+    request<any>(`/issues/${issueId}/ai-chat`, { method: 'DELETE' }),
 };

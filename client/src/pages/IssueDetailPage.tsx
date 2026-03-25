@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
+import AiChatPanel from '../components/AiChatPanel';
 
 const STATUS_LABELS: Record<string, string> = {
   open: '待處理',
@@ -263,6 +264,9 @@ export default function IssueDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* AI Chat */}
+      <AiChatPanel issueId={id!} />
 
       {/* Lightbox with zoom */}
       {lightboxSrc && (

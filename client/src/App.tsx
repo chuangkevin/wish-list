@@ -5,6 +5,7 @@ import Header from './components/Header';
 import LoginForm from './components/LoginForm';
 import IssueListPage from './pages/IssueListPage';
 import IssueDetailPage from './pages/IssueDetailPage';
+import SettingsPage from './pages/SettingsPage';
 
 function AppRoutes() {
   const { user, loading } = useAuth();
@@ -23,6 +24,7 @@ function AppRoutes() {
       <Routes>
         <Route path="/" element={<IssueListPage />} />
         <Route path="/issues/:id" element={<IssueDetailPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Routes>
     </>
   );
