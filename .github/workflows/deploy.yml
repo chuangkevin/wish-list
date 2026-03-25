@@ -1,0 +1,65 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: ["Build and Push Docker Images"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.DEPLOY_SERVER_IP }} >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Sync docker-compose
+        run: |
+          scp docker-compose.prod.yml ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_SERVER_IP }}:${{ secrets.DEPLOY_PATH }}/docker-compose.yml
+
+      - name: Pull latest images
+        run: |
+          ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_SERVER_IP }} "\
+            cd ${{ secrets.DEPLOY_PATH }} && \
+            export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }} && \
+            for i in 1 2 3; do \
+              docker compose pull && break || sleep \$((i * 10)); \
+            done"
+
+      - name: Deploy containers
+        run: |
+          ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_SERVER_IP }} "\
+            cd ${{ secrets.DEPLOY_PATH }} && \
+            export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }} && \
+            docker compose down --remove-orphans && \
+            docker compose up -d --force-recreate && \
+            docker image prune -f --filter 'until=24h'"
+
+      - name: Health check
+        run: |
+          sleep 15
+          ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_SERVER_IP }} "\
+            curl -sf http://localhost:3737/api/health || exit 1"
+
+      - name: Deployment summary
+        run: |
+          echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ✅ Success" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
