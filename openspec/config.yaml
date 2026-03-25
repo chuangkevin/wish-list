@@ -1,0 +1,33 @@
+schema: spec-driven
+
+context: |
+  專案名稱：Wish List（工作問題回報平台）
+  目的：給女朋友使用，回報工作遇到的困難，由男友協助處理
+
+  Tech stack:
+    - Frontend: React + TypeScript (Vite)
+    - Backend: Node.js + Express
+    - Database: SQLite (via better-sqlite3 or drizzle)
+    - File storage: Local filesystem (Docker volume)
+    - Deployment: Docker on Raspberry Pi
+
+  核心功能：
+    - 問題清單：建立、瀏覽工作問題
+    - 問題詳情：點進去可以回報進度
+    - 媒體上傳：螢幕截圖(剪貼簿直接貼上)、多張照片上傳、影片上傳
+    - 留言板：每個問題底下可以留言討論
+    - 多人協作：多人可以查看和參與討論
+
+  約束：
+    - 部署在樹莓派，需注意效能和資源使用
+    - SQLite 單檔資料庫，簡單維護
+    - Docker 容器化部署
+    - 中文介面
+
+rules:
+  proposal:
+    - 以繁體中文撰寫
+    - 考慮樹莓派的資源限制
+  tasks:
+    - Break tasks into chunks of max 2 hours
+    - 以繁體中文撰寫
